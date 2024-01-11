@@ -1,3 +1,4 @@
+import re
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.views.decorators.csrf import csrf_exempt
@@ -7,13 +8,23 @@ from django.shortcuts import render
 from .SQL import *
 from .functions import *
 import json
+from urllib import parse
 
+
+prodjectObj = []
 def projectDetail(request):
     pid = request.GET.get('pid', 0)
 
-    print( ProjectDetails(pid) )
+    prodjectObj = ProjectDetails(pid)
     
     return render(request, "projects/project.html")
+
+def getDetails(request):
+    referer_url = request.META.get('HTTP_REFERER')
+    parsed      = parse.urlparse(referer_url)
+    pid         = re.sub(r"pid\=([\d]+)", r"\1", parsed.query)
+
+    return JsonResponse(ProjectDetails(pid)[0], safe=False )
 
 @csrf_exempt
 @login_required(login_url='/')

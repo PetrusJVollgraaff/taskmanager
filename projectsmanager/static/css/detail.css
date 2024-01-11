@@ -1,0 +1,41 @@
+.create_main_ctn{
+    margin: 10px auto;
+    width: fit-content;
+}
+
+.create_project_ctn{
+    border-width: 2px;
+    border-style: solid;
+    border-color: var(--black_border);
+    border-radius: 5px;
+    margin: 10px;
+    padding: 10px;
+    display: inline-block;
+    width: 290px;
+    height: 435px;
+    vertical-align: top;
+    overflow-y: auto;
+}
+
+.create_project_ctn input,
+.create_project_ctn select,
+.create_project_ctn textarea{
+    border-radius: 5px;
+    font-size: 16px;
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 5px;
+    resize: none;
+}
+
+.create_project_ctn p{
+    margin: 0px;
+}
+
+.create_project_ctn  .task_editor {
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--black_border);
+    padding: 10px;
+    margin: 5px 0px;
+}

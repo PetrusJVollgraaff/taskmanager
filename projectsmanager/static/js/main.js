@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function(){
     if (document.querySelector("button.view_project_list") != null){
         var elmbtn = document.getElementsByClassName("view_project_list")
         elmbtn[0].addEventListener("click",function(button){
-            location.href = "/myprojects";
+            location.href = "/";
         });
     }
 

@@ -159,56 +159,51 @@ def ProjectDetails(id):
                         P.addeddate, 
                         P.completeddate, 
                         P.DueDate, 
-                        PP.name AS priorityname,
-                        COALESCE(T.Task, '[]') AS Task
-                        --,PT.name AS typename, 
-                        --PT.descript AS typedescript                 
+                        PP.name AS priorityname
+                        --COALESCE(T.Task, '[]') AS Task
+                        ,PT.name AS typename, 
+                        PT.descript AS typedescript                 
                     From projectsmanager_projects AS P
-                    LEFT JOIN projectsmanager_priority AS PP ON PP.id=P.priority_id
-                    --LEFT JOIN projectsmanager_type AS PT     ON PT.id=P.type_id
-                    LEFT JOIN Tasks AS T                     ON T.project_id = P.id
+                    JOIN projectsmanager_priority AS PP ON PP.id=P.priority_id
+                    JOIN projectsmanager_type AS PT     ON PT.id=P.type_id
+
                     WHERE P.id='''+ str(id) +'''
                     ''')
         row = dictfetchall(cursor)       
         cursor.close() 
         
-        #row = getAssignedTasks(row)     
+        row = getAssignedTasks(row, str(id))     
     return row
 
-def getAssignedTasks(project_row):
+def getAssignedTasks(project_row, project_id):
     if project_row and isinstance(project_row, list):   
         for i,each in enumerate(project_row):
             with connection.cursor() as cursor:
-                project_id = str(each.get("id"))
                 cursor.execute('''
-                                ;WITH STAFF AS(
-                                    SELECT 
-                                        U.id AS userid, 
-                                        U.first_name AS firstname, 
-                                        U.last_name AS lastname, 
-                                        AT.project_id, 
-                                        AT.tasks_id
-                                    FROM projects_user AS U
-                                    JOIN projects_assignedto AS AT ON AT.staff_id=U.id 
-                                    WHERE AT.project_id='''+ project_id +''' 
-                                    ORDER BY AT.addeddate DESC
-                                ),
-
-                                
-                               
-                               Select 
-                               AT.id AS assignedid, 
-                               T.tasksname, 
-                               T.tasksdescript, 
-                               T.id AS taskid, 
-                               AT.status,
-                               S.userid,
-                               S.firstname,
-                               S.lastname
-                               FROM projects_assignedto AS AT 
-                               JOIN projects_tasks AS T ON T.id = AT.tasks_id
-                               JOIN STAFF AS S          ON S.project_id = AT.project_id AND S.tasks_id = AT.id
-                               WHERE AT.project_id='''+project_id+''' ''')                           
+                            ;WITH STAFF AS(
+                                SELECT 
+                                    U.id AS userid, 
+                                    U.first_name +' '+ U.last_name AS staffname, 
+                                    AT.project_id, 
+                                    AT.tasks_id
+                                FROM projectsmanager_user AS U
+                                JOIN projectsmanager_taskassignto AS AT ON AT.staffassign_id = U.id 
+                                WHERE AT.project_id= '''+ project_id +'''
+                                ORDER BY AT.addeddate DESC
+                            )
+   
+                            SELECT 
+                                T.id AS id, 
+                                T.name, 
+                                T.descript, 
+                                AT.status,
+                                S.userid,
+                                S.staffname
+                            FROM projectsmanager_taskassignto AS AT 
+                            JOIN projectsmanager_tasks AS T ON T.id = AT.tasks_id
+                            JOIN STAFF AS S          ON S.project_id = AT.project_id AND S.tasks_id = AT.id
+                            WHERE AT.project_id = '''+ project_id +'''
+                        ''')                           
                 project_row[i]["tasks"] = dictfetchall(cursor)                
                 cursor.close()                
 

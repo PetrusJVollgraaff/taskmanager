@@ -75,7 +75,7 @@ def SignedProject(id):
                     JOIN projectsmanager_type AS PT     ON PT.id = P.type_id
                     JOIN projectsmanager_tasks AS T     ON T.id = AT.tasks_id
                     
-                    WHERE AT.staffassign_id='''+str(id)+''' AND T.status!='complete' 
+                    WHERE AT.staffassign_id='''+str(id)+''' AND AT.status!='complete' 
                     AND AT.id = (
                         SELECT 
                             AT2.id
@@ -119,30 +119,60 @@ def SignedProjectHistory(id):
         cursor.close()       
     return row
 
-def ProjectDetails(request, id):
+def ProjectDetails(id):
     row = []
     with connection.cursor() as cursor:
-        cursor.execute( 
-                '''SELECT 
+        cursor.execute(''' 
+                        ;WITH STAFF AS(
+                            SELECT 
+                                U.id AS userid, 
+                                U.first_name +' '+ U.last_name AS staffname, 
+                                AT.project_id, 
+                                AT.tasks_id
+                            FROM projectsmanager_user AS U
+                            JOIN projectsmanager_taskassignto AS AT ON AT.staffassign_id = U.id 
+                            WHERE AT.project_id= '''+ str(id) +'''
+                            ORDER BY AT.addeddate DESC
+                        ),
+
+                        Tasks AS (
+                            SELECT AT.project_id ,
+                                json_group_array(json_object( 
+                                        'id', T.id,
+                                        'name', T.name, 
+                                        'descript', T.descript, 
+                                        'status', AT.status,
+                                        'staffid', S.userid,
+                                        'staffname', S.staffname
+                                
+                                )) AS Task
+                            FROM projectsmanager_taskassignto AS AT 
+                            JOIN projectsmanager_tasks AS T ON T.id = AT.tasks_id
+                            JOIN STAFF AS S          ON S.project_id = AT.project_id AND S.tasks_id = AT.id
+                            WHERE AT.project_id = '''+ str(id) +'''
+                        )
+                    
+                        SELECT 
                         P.id, 
-                        P.projectname, 
-                        P.projectdescript, 
-                        P.startingdate, 
+                        P.name AS projectname, 
+                        P.descript AS projectdescript, 
+                        P.addeddate, 
                         P.completeddate, 
                         P.DueDate, 
-                        PP.priorityname, 
-                        PT.typename, 
-                        PP.prioritydescript, 
-                        PT.typedescript                 
-                    From projects_project AS P
-                    JOIN projects_projectspriority AS PP    ON PP.id=P.projectpriority_id
-                    JOIN projects_projectstype AS PT        ON PT.id=P.projecttype_id
-                    WHERE P.id='''+str(id)+'''
+                        PP.name AS priorityname,
+                        COALESCE(T.Task, '[]') AS Task
+                        --,PT.name AS typename, 
+                        --PT.descript AS typedescript                 
+                    From projectsmanager_projects AS P
+                    LEFT JOIN projectsmanager_priority AS PP ON PP.id=P.priority_id
+                    --LEFT JOIN projectsmanager_type AS PT     ON PT.id=P.type_id
+                    LEFT JOIN Tasks AS T                     ON T.project_id = P.id
+                    WHERE P.id='''+ str(id) +'''
                     ''')
         row = dictfetchall(cursor)       
         cursor.close() 
         
-        row = getAssignedTasks(row)     
+        #row = getAssignedTasks(row)     
     return row
 
 def getAssignedTasks(project_row):
@@ -162,7 +192,9 @@ def getAssignedTasks(project_row):
                                     JOIN projects_assignedto AS AT ON AT.staff_id=U.id 
                                     WHERE AT.project_id='''+ project_id +''' 
                                     ORDER BY AT.addeddate DESC
-                                )
+                                ),
+
+                                
                                
                                Select 
                                AT.id AS assignedid, 

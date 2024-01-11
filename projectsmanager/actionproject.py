@@ -8,6 +8,13 @@ from .SQL import *
 from .functions import *
 import json
 
+def projectDetail(request):
+    pid = request.GET.get('pid', 0)
+
+    print( ProjectDetails(pid) )
+    
+    return render(request, "projects/project.html")
+
 @csrf_exempt
 @login_required(login_url='/')
 def taskstatus(request):

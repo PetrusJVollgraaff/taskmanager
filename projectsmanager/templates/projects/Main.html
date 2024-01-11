@@ -60,7 +60,10 @@
             <p class="two_span"><span>Complete Date:</span><span>{{project.completeddate}}</span></p>
             <hr>
             <p class="two_span"><span>Project Type:</span><span title="{{project.typedescript}}">{{project.typename}}</span></p>
-            <p class="two_span"><span>Project Priority:</span><span >{{project.priorityname}}</span></p>                    
+            <p class="two_span"><span>Project Priority:</span><span >{{project.priorityname}}</span></p>    
+            {% if user.is_authenticated %}
+                <button onclick="window.location.href = '{% url 'projectDetail' %}?pid={{ project.id }}';">View</button>
+            {% endif %}                
         </div>
     {% empty %}
         <h3>No Open Projects</h3>

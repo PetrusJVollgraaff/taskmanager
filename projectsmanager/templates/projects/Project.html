@@ -1,0 +1,68 @@
+{% extends "projects/layout.html" %}
+
+{% load static %}
+
+{% block styles %}
+    <link href="{% static "css/detail.css" %}?time={% now "u" %}" rel="stylesheet">
+    <script src="{% static "js/detail.js" %}?time={% now "u" %}" type="text/javascript"></script>
+{% endblock %}
+
+{% block body %}
+
+<div class="create_main_ctn">
+    <div class="create_project_ctn">
+        <h1>Project Details</h1>
+            
+        <div id="project_detail_ctn" method="POST">
+            <input type="hidden" name="csrfmiddlewaretoken" value="UDEemlxJi55zLC6bCkt5w1sHZfDytFFPfe1WMzwHrXeQ6RenH8RO4UVNenb4mrYj">
+            
+            <div class="left_ctn">
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="2">
+                                <div name="project_name"></div>
+                            </th>
+                        </tr><tr>
+                    </tr></thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="2">
+                                <div name="project_descript" ></div>
+                            </td>
+                        </tr>
+                        <tr>    
+                            <td><p>Due Date:</p></td>
+                            <td><div name="project_duedate"></div></td>
+                        </tr>
+                        <tr>
+                            <td><p>Project Type:</p><p></p></td>
+                            <td>
+                                <div name="project_type"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><p>Project Priority:</p><p></p></td>
+                            <td>
+                                <div name="project_priority"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>                
+            </div>
+            <button class="view_project_list" type="button">back</button>   
+        </div>
+    </div>
+    <div class="create_project_ctn">
+        <h1>Tasks</h1> 
+        <div class="task_main">
+            <div class="task_editor" data-id="1">
+                <div name="task_name" ></div>
+                <div name="task_descript"></div>
+                <div name="task_staff" ></div>
+                <div class="task_btn"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

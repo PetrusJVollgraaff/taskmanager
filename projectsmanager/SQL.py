@@ -26,32 +26,6 @@ def ShowAllProject():
         
     return row
 
-def CreatedProject(id):
-    row = []
-    with connection.cursor() as cursor:
-        cursor.execute('''
-                        SELECT 
-                            P.id, 
-                            P.projectname, 
-                            P.projectdescript, 
-                            P.completeddate, 
-                            P.DueDate, 
-                            PP.priorityname, 
-                            PP.prioritydescript,
-                            PP.level, 
-                            PT.typename,  
-                            PT.typedescript
-                        From projects_project AS P
-                        JOIN projects_projectspriority AS PP    ON PP.id=P.projectpriority_id
-                        JOIN projects_projectstype AS PT        ON PT.id=P.projecttype_id
-                        JOIN projects_projectlog AS PL          ON PL.project_id=P.id
-                        WHERE PL.staff_id='''+str(id)+''' AND LOWER(PL.lognote)='create' AND P.isDeleted = 0
-                    ''')
-        row = dictfetchall(cursor)       
-        cursor.close()     
-        
-    return row
-
 def SignedProject(id):
     
     row = []
@@ -85,35 +59,6 @@ def SignedProject(id):
                         ORDER BY AT2.addeddate ASC LIMIT 1
                     ) AND P.isDeleted = 0
                     ORDER BY AT.addeddate DESC
-                ''')
-        row = dictfetchall(cursor)
-        cursor.close()       
-    return row
-
-def SignedProjectHistory(id):   
-    row = []
-    with connection.cursor() as cursor:
-        cursor.execute(''' 
-                    SELECT 
-                        P.id, 
-                        P.projectname, 
-                        P.projectdescript, 
-                        P.startingdate, 
-                        P.completeddate, 
-                        P.DueDate, 
-                        PP.priorityname, 
-                        PT.typename, 
-                        PP.prioritydescript, 
-                        PT.typedescript, 
-                        AT.staff_id, 
-                        T.tasksorder
-                    From projects_assignedto AS AT
-                    JOIN projects_project AS P              ON P.id=AT.project_id
-                    JOIN projects_projectspriority AS PP    ON PP.id=P.projectpriority_id
-                    JOIN projects_projectstype AS PT        ON PT.id=P.projecttype_id
-                    JOIN projects_tasks AS T                ON T.id=AT.tasks_id
-                    WHERE AT.staff_id='''+str(id)+''' AND AT.status=='complete'
-                    ORDER BY T.tasksorder, AT.addeddate DESC
                 ''')
         row = dictfetchall(cursor)
         cursor.close()       
@@ -183,7 +128,12 @@ def getAssignedTasks(project_row, project_id):
                             ;WITH STAFF AS(
                                 SELECT 
                                     U.id AS userid, 
-                                    U.first_name +' '+ U.last_name AS staffname, 
+                                    CASE 
+                                        WHEN (U.first_name IS NULL OR U.first_name = '') AND (U.last_name IS NULL OR U.last_name = '') THEN
+                                            U.username
+                                        ELSE
+                                            U.first_name ||' '|| U.last_name
+                                    END AS staffname,
                                     AT.project_id, 
                                     AT.tasks_id
                                 FROM projectsmanager_user AS U
@@ -230,21 +180,18 @@ def getStaff():
         cursor.execute('''
                         SELECT 
                             U.id, 
-                            U.first_name, 
-                            U.last_name                  
+                            CASE 
+                                WHEN (U.first_name IS NULL OR U.first_name = '') AND (U.last_name IS NULL OR U.last_name = '') THEN
+                                    U.username
+                                ELSE
+                                    U.first_name ||' '|| U.last_name
+                            END AS staffname                
                         From projectsmanager_user AS U
                         WHERE U.id != 1
                     ''')
         row = dictfetchall(cursor)       
         cursor.close()      
     return row
-
-def UpdateLog(projectid, staffid, current_date):
-    
-    staffcreate = User.objects.get(id = staffid)
-    projectC    = Projects.objects.get(id = projectid)
-    projectlog  = Log(lognote="deleted", project=projectC, staff=staffcreate, addeddate=current_date)
-    projectlog.save()
 
 def getPriorities():
     row = []
@@ -274,23 +221,6 @@ def getTypes():
         row = dictfetchall(cursor)       
         cursor.close()      
     return row
-
-def getAllTasks():
-    row = []
-    with connection.cursor() as cursor:
-        cursor.execute('''
-                    SELECT 
-                        T.id, 
-                        T.tasksname, 
-                        T.tasksdescript, 
-                        T.tasksorder, 
-                        PT.typename                  
-                    From projects_tasks AS T
-                    JOIN projects_projectstype AS PT ON PT.id = T.projecttype_id
-                    WHERE T.isDeleted = 0 AND T.deleteddate IS NULL''')
-        row = dictfetchall(cursor)       
-        cursor.close()      
-    return row
     
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
@@ -299,11 +229,3 @@ def dictfetchall(cursor):
         dict(zip(columns, row))
         for row in cursor.fetchall()
     ]
-    
-def dictChoices(choices):
-    test = list()
-    for i,each in enumerate(choices):
-        dictz = {'value': each[0], 'name': each[1]}
-        test.append(dictz)
-        
-    return test

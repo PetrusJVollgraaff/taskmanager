@@ -33,7 +33,7 @@ class NewTasks{
     buildStaffSelect(data){
         return  '<option disabled selected value >Not Assigned</option>'+
                 this.staffs.map(function(staff, index){ 
-                    return '<option value="'+staff.id+'">'+staff.first_name+' '+staff.last_name +'</option>' 
+                    return '<option value="'+staff.id+'">'+ staff.staffname +'</option>' 
                 }).join('')
     }
 

@@ -13,6 +13,5 @@ urlpatterns = [
     path('projectDetail', actionproject.projectDetail, name='projectDetail'),
     path('getDetails', actionproject.getDetails, name='getDetails'),
     path('taskstatus', actionproject.taskstatus, name='taskstatus'),
-    path('projectstatus', actionproject.projectstatus, name='projectstatus'),
-    #path("myprojects", projects.myprojects, name="myprojects"),
+    path('projectstatus', actionproject.projectstatus, name='projectstatus')
 ]

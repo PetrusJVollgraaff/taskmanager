@@ -1,0 +1,71 @@
+{% extends "projects/layout.html" %}
+{% load static %}
+
+{% block styles %}
+    <link href="{% static "css/listproject.css" %}?time={% now "u" %}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="project_main_ctn">
+    <h1>
+    {% if user.is_authenticated %}
+        Your Projects
+    {% else %}
+        Projects
+    {% endif %}
+    </h1>
+    
+    <div>Display by: {{ displayby }}</div>
+    
+    <ul class="display_by_ctn">
+        <li class="display_by" data-by="priority" >
+            <button>
+            {% if request.COOKIES.project_by == "priority" %}
+                <strong>Priorities</strong>
+            {% else %} 
+                Priorities
+            {% endif %}
+            </button>
+        </li>
+        
+        <li class="display_by" data-by="type">
+            <button> 
+            {% if request.COOKIES.project_by == "type" %}
+                <strong>Types</strong> 
+            {% else %}
+                Types
+            {% endif %}
+            </button>
+        </li>
+
+        <li class="display_by" data-by="date">
+            <button> 
+            {% if request.COOKIES.project_by != "priority" and  request.COOKIES.project_by != "type" %}                
+                <strong>Created Date</strong>
+            {% else %}
+                Created Date
+            {% endif %}
+            </button>
+        </li>
+    </ul>
+    
+    <div class="project_list">
+    {% for project in projects %}
+        <div class="project_ctn">
+            <h3>{{project.projectname}}</h3>
+            <p>{{project.projectdescript}}</p>
+            <hr>
+            <p class="two_span"><span>Created Date:</span><span>{{project.addeddate}}</span></p>
+            <p class="two_span"><span>Due Date:</span><span>{{project.DueDate}}</span></p>
+            <p class="two_span"><span>Complete Date:</span><span>{{project.completeddate}}</span></p>
+            <hr>
+            <p class="two_span"><span>Project Type:</span><span title="{{project.typedescript}}">{{project.typename}}</span></p>
+            <p class="two_span"><span>Project Priority:</span><span >{{project.priorityname}}</span></p>                    
+        </div>
+    {% empty %}
+        <h3>No Open Projects</h3>
+    {% endfor %}
+
+    </div>
+</div>
+{% endblock %}

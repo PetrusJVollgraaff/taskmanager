@@ -1,0 +1,34 @@
+[
+    {
+      "model": "projectsmanager.Type",
+      "pk": 1,
+      "fields": {
+        "name": "Creat Application",
+        "descript": "Create a new Application"
+      }
+    },
+    {
+      "model": "projectsmanager.Type",
+      "pk": 2,
+      "fields": {
+        "name": "Add Feature",
+        "descript": "Add a feature to existing Application"
+      }
+    },
+    {
+      "model": "projectsmanager.Type",
+      "pk": 3,
+      "fields": {
+        "name": "Application Bug",
+        "descript": "Fix a bug found in Application"
+      }
+    },
+    {
+      "model": "projectsmanager.Type",
+      "pk": 4,
+      "fields": {
+        "name": "Application Style",
+        "descript": "Style the Application"
+      }
+    }
+]

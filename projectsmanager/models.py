@@ -5,8 +5,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 # Create your models here.
 
 class User(AbstractUser):
-    #login_count = models.PositiveIntegerField(default=0)
-
     def __str__(self):
         return self.username
 

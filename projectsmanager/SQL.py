@@ -5,21 +5,82 @@ def ShowAllProject():
     row = []
     with connection.cursor() as cursor:
         cursor.execute('''
+                        ;WITH Staff AS(
+                            SELECT 
+                                P.id as projectid,
+                                U.id AS userid, 
+                                CASE 
+                                    WHEN (U.first_name IS NULL OR U.first_name = '') AND (U.last_name IS NULL OR U.last_name = '') THEN
+                                        U.username
+                                    ELSE
+                                        U.first_name ||' '|| U.last_name
+                                END AS staffname
+                            FROM projectsmanager_projects AS P
+                            JOIN projectsmanager_user AS U ON P.staffadd_id = U.id  
+                            WHERE P.isDeleted = 0
+                        )
+                       
+                       
                         SELECT 
                             P.id, 
                             P.name AS 'projectname', 
                             P.descript AS 'projectdescript', 
-                            P.addeddate,
+                            strftime('%d/%m/%Y %H:%M', P.addeddate) AS addeddate,
                             P.completeddate, 
                             P.DueDate, 
                             PP.name AS 'priorityname', 
                             PP.level, 
                             PT.name AS 'typename', 
-                            PT.descript AS 'typedescript'
-                        From projectsmanager_projects AS P
-                        LEFT JOIN projectsmanager_priority AS PP ON PP.id=P.priority_id
-                        LEFT JOIN projectsmanager_type AS PT ON PT.id=P.type_id
+                            PT.descript AS 'typedescript',
+                            S.staffname  
+                        FROM projectsmanager_projects P
+                        LEFT JOIN projectsmanager_priority AS PP    ON PP.id=P.priority_id
+                        LEFT JOIN projectsmanager_type AS PT        ON PT.id=P.type_id
+                        LEFT JOIN Staff AS S                             ON S.projectid = P.id 
                         WHERE P.isDeleted = 0
+                    ''')
+        row = dictfetchall(cursor)       
+        cursor.close()     
+        
+    return row
+
+def MyProject(userid):    
+    row = []
+    with connection.cursor() as cursor:
+        cursor.execute('''
+                        ;WITH Staff AS(
+                            SELECT 
+                                P.id as projectid,
+                                U.id AS userid, 
+                                CASE 
+                                    WHEN (U.first_name IS NULL OR U.first_name = '') AND (U.last_name IS NULL OR U.last_name = '') THEN
+                                        U.username
+                                    ELSE
+                                        U.first_name ||' '|| U.last_name
+                                END AS staffname
+                            FROM projectsmanager_projects AS P
+                            JOIN projectsmanager_user AS U ON P.staffadd_id = U.id  
+                            WHERE P.isDeleted = 0
+                        )
+                       
+                       
+                        SELECT 
+                            P.id, 
+                            P.name AS 'projectname', 
+                            P.descript AS 'projectdescript', 
+                            strftime('%d/%m/%Y %H:%M', P.addeddate) AS addeddate,
+                            P.completeddate, 
+                            P.DueDate, 
+                            PP.name AS 'priorityname', 
+                            PP.level, 
+                            PT.name AS 'typename', 
+                            PT.descript AS 'typedescript',
+                            S.staffname  
+                        FROM projectsmanager_projects P
+                        LEFT JOIN projectsmanager_priority AS PP    ON PP.id=P.priority_id
+                        LEFT JOIN projectsmanager_type AS PT        ON PT.id=P.type_id
+                        LEFT JOIN Staff AS S                        ON S.projectid = P.id 
+                        WHERE P.isDeleted = 0 AND P.staffadd_id = '''+str(userid)+'''
                     ''')
         row = dictfetchall(cursor)       
         cursor.close()     
@@ -31,23 +92,39 @@ def SignedProject(id):
     row = []
     with connection.cursor() as cursor:
         cursor.execute(''' 
+                    ;WITH Staff AS(
+                        SELECT 
+                            P.id as projectid,
+                            U.id AS userid, 
+                            CASE 
+                                WHEN (U.first_name IS NULL OR U.first_name = '') AND (U.last_name IS NULL OR U.last_name = '') THEN
+                                    U.username
+                                ELSE
+                                    U.first_name ||' '|| U.last_name
+                            END AS staffname
+                        FROM projectsmanager_projects AS P
+                        JOIN projectsmanager_user AS U ON P.staffadd_id = U.id  
+                        WHERE P.isDeleted = 0
+                    )
+                         
                     SELECT 
                         P.id, 
                         P.name AS 'projectname', 
                         P.descript AS 'projectdescript', 
-                        P.addeddate,
+                        strftime('%d/%m/%Y %H:%M', P.addeddate) AS addeddate,
                         P.completeddate, 
                         P.DueDate, 
                         PP.name AS 'priorityname', 
                         PP.level, 
                         PT.name AS 'typename',  
-                        PT.descript AS 'typedescript'
+                        PT.descript AS 'typedescript',
+                        S.staffname 
                     From projectsmanager_taskassignto AS AT
                     
                     JOIN projectsmanager_projects AS P  ON P.id = AT.project_id
                     JOIN projectsmanager_priority AS PP ON PP.id = P.priority_id
                     JOIN projectsmanager_type AS PT     ON PT.id = P.type_id
-                    JOIN projectsmanager_tasks AS T     ON T.id = AT.tasks_id
+                    JOIN Staff AS S                     ON S.projectid = P.id
                     
                     WHERE AT.staffassign_id='''+str(id)+''' AND AT.status!='complete' 
                     AND AT.id = (
@@ -68,35 +145,7 @@ def ProjectDetails(id):
     row = []
     with connection.cursor() as cursor:
         cursor.execute(''' 
-                        ;WITH STAFF AS(
-                            SELECT 
-                                U.id AS userid, 
-                                U.first_name +' '+ U.last_name AS staffname, 
-                                AT.project_id, 
-                                AT.tasks_id
-                            FROM projectsmanager_user AS U
-                            JOIN projectsmanager_taskassignto AS AT ON AT.staffassign_id = U.id 
-                            WHERE AT.project_id= '''+ str(id) +'''
-                            ORDER BY AT.addeddate DESC
-                        ),
-
-                        Tasks AS (
-                            SELECT AT.project_id ,
-                                json_group_array(json_object( 
-                                        'id', T.id,
-                                        'name', T.name, 
-                                        'descript', T.descript, 
-                                        'status', AT.status,
-                                        'staffid', S.userid,
-                                        'staffname', S.staffname
-                                
-                                )) AS Task
-                            FROM projectsmanager_taskassignto AS AT 
-                            JOIN projectsmanager_tasks AS T ON T.id = AT.tasks_id
-                            JOIN STAFF AS S          ON S.project_id = AT.project_id AND S.tasks_id = AT.id
-                            WHERE AT.project_id = '''+ str(id) +'''
-                        )
-                    
+                                            
                         SELECT 
                         P.id, 
                         P.name AS projectname, 
@@ -107,12 +156,13 @@ def ProjectDetails(id):
                         PP.name AS priorityname
                         --COALESCE(T.Task, '[]') AS Task
                         ,PT.name AS typename, 
-                        PT.descript AS typedescript                 
+                        PT.descript AS typedescript ,
+                        U.first_name +' '+ U.last_name AS staffname                
                     From projectsmanager_projects AS P
-                    JOIN projectsmanager_priority AS PP ON PP.id=P.priority_id
-                    JOIN projectsmanager_type AS PT     ON PT.id=P.type_id
-
-                    WHERE P.id='''+ str(id) +'''
+                    JOIN projectsmanager_priority AS PP ON PP.id = P.priority_id
+                    JOIN projectsmanager_type AS PT     ON PT.id = P.type_id
+                    JOIN projectsmanager_user AS U      ON P.staffadd_id = U.id 
+                    WHERE P.id='''+ str(id) +''' AND P.isDeleted = 0
                     ''')
         row = dictfetchall(cursor)       
         cursor.close() 

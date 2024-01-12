@@ -3,13 +3,20 @@
 
 {% block styles %}
     <link href="{% static "css/listproject.css" %}?time={% now "u" %}" rel="stylesheet">
+    {% if user.is_authenticated and request.path == '/myprojects' %}
+    <script src="{% static "js/delete.js" %}?time={% now "u" %}" type="text/javascript"></script>
+    {% endif %}
 {% endblock %}
 
 {% block body %}
 <div class="project_main_ctn">
     <h1>
     {% if user.is_authenticated %}
-        Your Projects
+        {% if request.path == '/myprojects' %}
+            My Created Projects
+        {% else %}    
+            Projects awaits you
+        {% endif %}
     {% else %}
         Projects
     {% endif %}
@@ -51,10 +58,11 @@
     
     <div class="project_list">
     {% for project in projects %}
-        <div class="project_ctn">
+        <div class="project_ctn" data-pid="{{ project.id }}">
             <h3>{{project.projectname}}</h3>
             <p>{{project.projectdescript}}</p>
             <hr>
+            <p class="two_span"><span>Created By:</span><span>{{project.staffname}}</span></p>
             <p class="two_span"><span>Created Date:</span><span>{{project.addeddate}}</span></p>
             <p class="two_span"><span>Due Date:</span><span>{{project.DueDate}}</span></p>
             <p class="two_span"><span>Complete Date:</span><span>{{project.completeddate}}</span></p>
@@ -63,6 +71,9 @@
             <p class="two_span"><span>Project Priority:</span><span >{{project.priorityname}}</span></p>    
             {% if user.is_authenticated %}
                 <button onclick="window.location.href = '{% url 'projectDetail' %}?pid={{ project.id }}';">View</button>
+                {% if delete == 1 %}
+                <button onclick="DeleteProject({{ project.id }});">Delete</button>
+                {% endif %}
             {% endif %}                
         </div>
     {% empty %}

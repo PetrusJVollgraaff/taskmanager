@@ -15,6 +15,6 @@ def index(request):
     print( projectz )
 
     projectz.sort(key = lambda x:x[orderbyz])
-    return render(request, "projects/main.html",{"projects": projectz, "displayby": displaytitle})
+    return render(request, "projects/main.html",{"projects": projectz, "displayby": displaytitle, "delete": 0})
 
 

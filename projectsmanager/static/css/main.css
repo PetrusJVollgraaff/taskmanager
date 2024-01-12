@@ -42,6 +42,7 @@ ul.navbar-nav.mr-auto {
     display: grid;
     width: 180px;
     margin: 0px;
+    grid-gap: 10px;
 }
 
 nav.navbar > div.right_nav ul.navbar-nav{
@@ -53,9 +54,10 @@ nav.navbar > div.left_nav ul.navbar-nav{
 }
 
 nav.navbar > div.left_nav[data-t="3"] ul.navbar-nav{
-    grid-template-columns: repeat(3,33.33%);
+    grid-template-columns: repeat(3,auto);
 }
 
 ul.navbar-nav.mr-auto li{
     list-style-type: none;
+    width: max-content;
 }

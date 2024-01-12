@@ -3,11 +3,14 @@ from django.db import IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.db.models.functions import Now
 from django.shortcuts import render
 from .SQL import *
 from .functions import *
 import json
 
+@csrf_exempt
+@login_required(login_url='/')
 def create(request):
 
     priorities  = getPriorities()
@@ -15,10 +18,50 @@ def create(request):
 
     return render(request, "projects/create.html",{"priorities": priorities, "types": types})
 
+
+@csrf_exempt
+@login_required(login_url='/')
+def myprojects(request):
+    user            = request.user
+    projectz        = MyProject(user.id)
+    displayby       = CheckCookie(request)
+    displaytitle    = {"priority": "Priority", "type": "Type"}.get(displayby, "Create Date")
+    orderbyz        = {"priority": "level", "type": "typename"}.get(displayby, "addeddate")
+    
+    print( projectz )
+
+    projectz.sort(key = lambda x:x[orderbyz])
+    return render(request, "projects/main.html",{"projects": projectz, "displayby": displaytitle, "delete": 1})
+
+
+
+@csrf_exempt
+@login_required(login_url='/')
+def delete(request):
+    status = {}
+
+    if request.method == 'POST':
+        jsonData    = json.loads(request.body)
+        projectid   = int( jsonData.get("pid") )
+        userdetail  = User.objects.get(id=request.user.id)
+
+        try:
+            Projects.objects.filter(id = projectid, staffadd_id = userdetail.id).update( isDeleted = True, staffdelete_id = userdetail, removedate = Now())
+            
+            status['status'] = 'success'
+            status['message'] = 'Project is successfully Deleted'
+        except Exception as e:  
+            status['status'] = 'error'
+            status['message'] = 'Could not delete this Project'
+        
+    return JsonResponse(status, safe=False )
+
+
 @csrf_exempt
 @login_required(login_url='/')
 def fectstaffs(request):
     return JsonResponse(getStaff(), safe=False )
+
 
 @csrf_exempt
 @login_required(login_url='/')

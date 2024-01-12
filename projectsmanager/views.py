@@ -11,8 +11,6 @@ def index(request):
     displayby       = CheckCookie(request)
     displaytitle    = {"priority": "Priority", "type": "Type"}.get(displayby, "Create Date")
     orderbyz        = {"priority": "level", "type": "typename"}.get(displayby, "addeddate")
-    
-    print( projectz )
 
     projectz.sort(key = lambda x:x[orderbyz])
     return render(request, "projects/main.html",{"projects": projectz, "displayby": displaytitle, "delete": 0})

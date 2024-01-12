@@ -27,8 +27,6 @@ def myprojects(request):
     displayby       = CheckCookie(request)
     displaytitle    = {"priority": "Priority", "type": "Type"}.get(displayby, "Create Date")
     orderbyz        = {"priority": "level", "type": "typename"}.get(displayby, "addeddate")
-    
-    print( projectz )
 
     projectz.sort(key = lambda x:x[orderbyz])
     return render(request, "projects/main.html",{"projects": projectz, "displayby": displaytitle, "delete": 1})
@@ -70,7 +68,6 @@ def projectCreate(request):
 
     if request.method == 'POST':
         jsonData    = json.loads(request.body)
-        print(jsonData)
         title       = jsonData.get("name")
         descript    = jsonData.get("descript")
         typeid      = int( jsonData.get("type") )
@@ -85,8 +82,7 @@ def projectCreate(request):
         projectC = Projects(name=title, descript=descript, status="open", priority=priority, type=type, staffadd=userdetail)
         projectC.save()
         UpdateLog(projectC, None, userdetail, "Project Created")
-        
-        print( tasks )
+
         
         for i,task in enumerate(tasks):
             staff           = User.objects.get(id=task.get("staffid"))

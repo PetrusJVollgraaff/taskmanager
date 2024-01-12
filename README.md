@@ -7,9 +7,9 @@ Each task can be assigned to staff member and can complete by the assigned staff
 
 Each project and task action are been log to keep a record what was done on the project or task and by whom.
 
-### defaultuser
-> username = admin, password = password.
-> username = Staff1, password = password.
-> username = Staff2, password = password.
-> username = Staff3, password = password.
-> username = Staff4, password = password.
+### defaultuser:
+> * username = admin, password = password.
+> * username = Staff1, password = password.
+> * username = Staff2, password = password.
+> * username = Staff3, password = password.
+> * username = Staff4, password = password.

@@ -144,9 +144,8 @@ def SignedProject(id):
 def ProjectDetails(id):
     row = []
     with connection.cursor() as cursor:
-        cursor.execute(''' 
-                                            
-                        SELECT 
+        cursor.execute('''                        
+                    SELECT 
                         P.id, 
                         P.name AS projectname, 
                         P.descript AS projectdescript, 
@@ -157,7 +156,15 @@ def ProjectDetails(id):
                         --COALESCE(T.Task, '[]') AS Task
                         ,PT.name AS typename, 
                         PT.descript AS typedescript ,
-                        U.first_name +' '+ U.last_name AS staffname                
+                        U.first_name +' '+ U.last_name AS staffname,
+                        CASE
+                            WHEN EXISTS(
+                                SELECT *
+                                FROM projectsmanager_taskassignto AS AT 
+                                WHERE AT.project_id = P.id AND AT.status != 'complete' AND AT.isDeleted = 0
+                            ) OR P.status = 'complete' THEN 0
+                            ELSE 1
+                        END AS 'completebtn'               
                     From projectsmanager_projects AS P
                     JOIN projectsmanager_priority AS PP ON PP.id = P.priority_id
                     JOIN projectsmanager_type AS PT     ON PT.id = P.type_id
@@ -200,8 +207,8 @@ def getAssignedTasks(project_row, project_id):
                                 S.userid,
                                 S.staffname
                             FROM projectsmanager_taskassignto AS AT 
-                            JOIN projectsmanager_tasks AS T ON T.id = AT.tasks_id
-                            JOIN STAFF AS S          ON S.project_id = AT.project_id AND S.tasks_id = AT.id
+                            LEFT JOIN projectsmanager_tasks AS T ON T.id = AT.tasks_id
+                            LEFT JOIN STAFF AS S          ON S.project_id = AT.project_id AND S.tasks_id = AT.id
                             WHERE AT.project_id = '''+ project_id +'''
                         ''')                           
                 project_row[i]["tasks"] = dictfetchall(cursor)                

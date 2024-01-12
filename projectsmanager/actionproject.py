@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.db.models import Q
+from django.db.models.functions import Now
 from .SQL import *
 from .functions import *
 import json
@@ -13,11 +14,7 @@ from urllib import parse
 
 
 prodjectObj = []
-def projectDetail(request):
-    pid = request.GET.get('pid', 0)
-
-    prodjectObj = ProjectDetails(pid)
-    
+def projectDetail(request):    
     return render(request, "projects/project.html")
 
 def getDetails(request):
@@ -70,9 +67,9 @@ def projectstatus(request):
         project         = Projects.objects.get(id=projectid)
         
         try:    
-            Projects.objects.filter(project_id=projectid, staffadd_id=loginUserid).update( status=projectstatus )
+            Projects.objects.filter(project_id=projectid, staffadd_id=loginUserid.id).update( status=projectstatus, completeddate=Now() )
+            UpdateLog(project, None, loginUserid, f"Project status change to {projectstatus}" )
             
-            UpdateLog(project, None, loginUserid, "Project status change to {projectstatus}" )
             status['status'] = 'success'
             status['message'] = 'Task successfully saved'
         except Exception as e:    

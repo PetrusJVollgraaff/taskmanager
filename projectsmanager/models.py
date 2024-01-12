@@ -89,3 +89,6 @@ class Log(models.Model):
     staff       = models.ForeignKey(User, on_delete=models.CASCADE,null=True, blank=True )
     lognote     = models.CharField(max_length=200, default='create')
     addeddate   = models.DateTimeField('date published', editable=False, auto_now_add=True)
+
+    def __str__(self):
+        return f"Project: \"{self.project.name}\", Tasks: \"{self.task.name} \", Staff: \"{self.staff.first_name} {self.staff.last_name} \", LogNote: \"{self.lognote}\", DateLog: \"{self.addeddate} \" " 

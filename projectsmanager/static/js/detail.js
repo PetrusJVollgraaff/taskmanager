@@ -7,7 +7,7 @@ class Tasks{
     #setStatus(val){ this.status = val }
 
     #changeStatus(val){ 
-        var _ = this, elm = document.querySelectorAll(".task_editor[data-id='"+this.id+"']")
+        var _ = this;
 
         fetch('/taskstatus', {
             method: "POST",
@@ -18,16 +18,8 @@ class Tasks{
         .then((data) => { 
             if(data.status == "success"){
                 _.#setStatus(val)
-                location.reload()
-                /*if (elm[0].querySelector("button.btn") != null){
-                    var elmbtn = document.getElementsByClassName("btn")
-                    //elmbtn[0].removeEventListener("click");
-
-                    elmbtn[0].outerHTML = _.#buildbtn()
-                    _.eventlistner()
-                }*/
-                                
                 alert(data.message)
+                location.reload()                
             }else{
                 alert(data.message)
             }            
@@ -48,22 +40,21 @@ class Tasks{
 
     eventlistner(){
         var _ = this, elm = document.querySelectorAll(".task_editor[data-id='"+this.id+"']")
-        if (elm[0].querySelector("button.btn") != null){
-            var elmbtn = document.getElementsByClassName("btn")
+        var type = (_.status == "complete")? "callback": (_.status == "start")? "complete" : "start";
+        if (elm[0].querySelector("button.btn") != null){           
+            var elmbtn = elm[0].querySelectorAll('.btn[data-t="'+type+'"]')
+        
             elmbtn[0].addEventListener("click",function(button){
                 var val = button.target.dataset.t
                 _.#changeStatus(val)
             });
         }
     }
-
-
 }
 
 class ProjectDetails{
     constructor(data){
         Object.assign(this, data)
-        console.log(this)
     }
 
     #buildTasks(){
@@ -76,6 +67,32 @@ class ProjectDetails{
         })
     }
 
+    #setStatus(val){ this.status = val }
+
+    #changeStatus(val){ 
+        var _ = this;
+
+        fetch('/projectstatus', {
+            method: "POST",
+            headers: { "X-CSRFToken": getCookie("csrftoken"), },
+            body: JSON.stringify({ projectid: _.id, status: "complete" }),
+        })
+        .then((response) => { return response.json() })
+        .then((data) => { 
+            if(data.status == "success"){
+                _.#setStatus(val)
+                alert(data.message)
+                location.reload()                
+            }else{
+                alert(data.message)
+            }            
+        })
+    }
+
+    #buildbtn(){
+        return (this.completebtn == 1)? '<button class="btn complete_project" >Complete</button>' : '';
+    }
+
     build(){
         var _ = this, elmP = document.getElementById("project_detail_ctn")
 
@@ -86,10 +103,23 @@ class ProjectDetails{
         elmP.querySelector('div[name="project_type"]').innerHTML        = this.typename
 
         _.#buildTasks()
+        elmP.querySelector("div.btn_ctn").insertAdjacentHTML("beforeend", _.#buildbtn())
+        _.#eventlistner()
     }
 
-    eventlistner(){
+    #eventlistner(){
+        var _ = this, elmP = document.getElementById("project_detail_ctn")   
 
+        if(this.completebtn == 1){
+            if (elmP.querySelector("button.complete_project") != null){           
+                var elmbtn = elmP.querySelectorAll('.complete_project')
+            
+                elmbtn[0].addEventListener("click",function(button){
+                    var val = button.target.dataset.t
+                    _.#changeStatus(val)
+                });
+            }
+        }
     }
 }
 
@@ -102,6 +132,5 @@ document.addEventListener("DOMContentLoaded", function(){
     .then((data) => { 
         var project = new ProjectDetails(data)
         project.build()
-        project.eventlistner()
     })
 })

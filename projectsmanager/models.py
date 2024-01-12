@@ -72,7 +72,7 @@ class TaskAssignTo(models.Model):
     tasks       = models.ForeignKey(Tasks, on_delete=models.CASCADE,null=True, blank=True)
     project     = models.ForeignKey(Projects, on_delete=models.CASCADE,null=True, blank=True )
     staffassign = models.ForeignKey(User, related_name='staffassigned', on_delete=models.CASCADE,null=True, blank=True )
-    status      = models.CharField(max_length=200, blank=True)
+    status      = models.CharField(max_length=200, blank=True,default="open")
     staffadd    = models.ForeignKey(User, related_name='assigned_addedstaff', on_delete=models.CASCADE,null=True, blank=True )
     addeddate   = models.DateTimeField('date published', editable=False, auto_now_add=True)
     staffdelete = models.ForeignKey(User, related_name='assigned_deletedstaff', on_delete=models.CASCADE,null=True, blank=True )

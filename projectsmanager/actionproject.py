@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.db.models import Q
 from .SQL import *
 from .functions import *
 import json
@@ -41,12 +42,16 @@ def taskstatus(request):
         task        = Tasks.objects.get(id=taskid)
         
         try:    
-            TaskAssignTo.objects.filter(tasks_id = taskid, project_id=projectid, staff_id=loginUserid).update( status=taskstatus )
+            TaskAssignTo.objects.filter(
+                Q(tasks_id = taskid, project_id=projectid, staffassign_id=loginUserid.id) |
+                Q(tasks_id = taskid, project_id=projectid, staffadd_id=loginUserid.id)
+            ).update( status=taskstatus )
             
-            UpdateLog(project, task, loginUserid, "Task status change to {taskstatus}" )
+            UpdateLog(project, task, loginUserid, f"Task status change to {taskstatus}" )
             status['status'] = 'success'
             status['message'] = 'Task successfully saved'
         except Exception as e:    
+            print(e)
             status['status'] = 'error'
             status['message'] = 'An Error has occured'
         

@@ -22,8 +22,10 @@
 
 .project_main_ctn .project_list{
     display: grid;
-    grid-template-columns: repeat(3, 33.33%);
+    grid-template-columns: repeat(4, calc(25% - 8px));
     grid-gap: 10px;
+    max-height: calc(100% - 150px);
+    overflow-x: auto;
 }
 
 .project_main_ctn .project_list .project_ctn{

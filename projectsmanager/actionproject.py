@@ -12,11 +12,13 @@ from .functions import *
 import json
 from urllib import parse
 
-
-prodjectObj = []
+@csrf_exempt
+@login_required(login_url='/')
 def projectDetail(request):    
     return render(request, "projects/project.html")
 
+@csrf_exempt
+@login_required(login_url='/')
 def getDetails(request):
     referer_url = request.META.get('HTTP_REFERER')
     parsed      = parse.urlparse(referer_url)

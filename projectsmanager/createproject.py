@@ -124,6 +124,7 @@ def projectCreate(request):
         
     return JsonResponse(status, safe=False )
 
+
 @csrf_exempt
 @login_required(login_url='/')
 def projectEdit(request):
@@ -138,17 +139,22 @@ def projectEdit(request):
         priorityid  = int( jsonData.get("priority") )
         duedate     = jsonData.get("duedate")
         tasks       = jsonData.get("tasks")
-        
+        tasksremove = jsonData.get("tasksremoved")
+
         userdetail  = User.objects.get(id=request.user.id)
         priority    = Priority.objects.get(id=priorityid)
         type        = Type.objects.get(id=typeid)
         MainProject = Projects.objects.get(id=mainprojectid)
         
-        projectC = Projects(name=title, descript=descript, status="open", priority=priority, type=type, staffadd=userdetail)
-        projectC.save()
+        
+        if not Projects.objects.filter(name=title, descript=descript, priority=priority, type=type ).exists():
+            projectC = Projects(name=title, descript=descript, status="open", priority=priority, type=type, staffadd=userdetail)
+            projectC.save()
 
-        proPros    = ProjectProjects(mainproject = MainProject, subproject=projectC)
-        proPros.save()
+            proPros    = ProjectProjects(mainproject = MainProject, subproject=projectC)
+            proPros.save()
+
+
 
         UpdateLog(MainProject, None, userdetail, "Project Edited")
 
@@ -168,6 +174,14 @@ def projectEdit(request):
             assignto.save()
 
             UpdateLog(projectC, taskC, userdetail, "Project Task Created")
+
+        for i,task in enumerate(tasksremove):
+            taskid      = task.get("id")
+            task        = Tasks.objects.get(id=taskid)
+            
+            ProjectsTasks.objects.filter((tasks_id=task.id, project_id=MainProject.id).update(isDelete = True)
+
+            UpdateLog(MainProject, task, userdetail, "Project Task Removed")
         '''
         status['status'] = 'success'
         status['message'] = 'Project is successfully Added'

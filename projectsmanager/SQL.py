@@ -18,13 +18,61 @@ def ShowAllProject():
                             FROM projectsmanager_projects AS P
                             JOIN projectsmanager_user AS U ON P.staffadd_id = U.id  
                             WHERE P.isDeleted = 0
-                        )
+                        ),
                        
+                        EditProject AS (
+                            SELECT
+                                P.id,
+                                CASE 
+                                    WHEN EXISTS( SELECT PP.mainproject_id FROM projectsmanager_projectprojects PP WHERE PP.mainproject_id = P.id  ) THEN
+                                        (SELECT
+                                            P1.id 
+                                        FROM projectsmanager_projects P1 
+                                        JOIN projectsmanager_projectprojects PP             
+                                        WHERE  PP.mainproject_id = P1.id
+                                        ORDER BY PP.editeddate DESC LIMIT 1
+                                        )
+                                    ELSE
+                                        P.id
+                                END AS projectid,
+                                CASE 
+                                    WHEN EXISTS( SELECT PP.mainproject_id FROM projectsmanager_projectprojects PP WHERE PP.mainproject_id = P.id  ) THEN
+                                        1
+                                    ELSE
+                                        0
+                                END AS subproject
+                            FROM projectsmanager_projects P
+                            WHERE P.isDeleted = 0    
+                        ),
+
+                        ProjectDetails AS (
+                            SELECT     
+                                P.id,
+                                CASE 
+                                    WHEN EP.subproject = 1 THEN
+                                        (SELECT P1.name 
+                                        FROM projectsmanager_projects P1 
+                                        WHERE  P1.id = EP.projectid)
+                                    ELSE
+                                        P.name 
+                                END AS 'projectname', 
+                                CASE 
+                                    WHEN EP.subproject = 1 THEN
+                                        (SELECT P1.descript 
+                                        FROM projectsmanager_projects P1 
+                                        WHERE  P1.id = EP.projectid)
+                                    ELSE
+                                        P.descript 
+                                END AS 'projectdescript'
+                            FROM projectsmanager_projects P
+                            JOIN EditProject AS EP ON EP.id = P.id
+                            WHERE P.isDeleted = 0
+                        )             
                        
                         SELECT 
                             P.id, 
-                            P.name AS 'projectname', 
-                            P.descript AS 'projectdescript', 
+                            PD.projectname, 
+                            PD.projectdescript, 
                             strftime('%d/%m/%Y %H:%M', P.addeddate) AS addeddate,
                             P.completeddate, 
                             P.DueDate, 
@@ -34,9 +82,10 @@ def ShowAllProject():
                             PT.descript AS 'typedescript',
                             S.staffname  
                         FROM projectsmanager_projects P
+                        JOIN ProjectDetails AS PD                   ON PD.id = P.id 
                         LEFT JOIN projectsmanager_priority AS PP    ON PP.id=P.priority_id
                         LEFT JOIN projectsmanager_type AS PT        ON PT.id=P.type_id
-                        LEFT JOIN Staff AS S                             ON S.projectid = P.id 
+                        LEFT JOIN Staff AS S                        ON S.projectid = P.id 
                         WHERE P.isDeleted = 0
                     ''')
         row = dictfetchall(cursor)       
@@ -63,11 +112,59 @@ def MyProject(userid):
                             WHERE P.isDeleted = 0
                         )
                        
+                       EditProject AS (
+                            SELECT
+                                P.id,
+                                CASE 
+                                    WHEN EXISTS( SELECT PP.mainproject_id FROM projectsmanager_projectprojects PP WHERE PP.mainproject_id = P.id  ) THEN
+                                        (SELECT
+                                            P1.id 
+                                        FROM projectsmanager_projects P1 
+                                        JOIN projectsmanager_projectprojects PP             
+                                        WHERE  PP.mainproject_id = P1.id
+                                        ORDER BY PP.editeddate DESC LIMIT 1
+                                        )
+                                    ELSE
+                                        P.id
+                                END AS projectid,
+                                CASE 
+                                    WHEN EXISTS( SELECT PP.mainproject_id FROM projectsmanager_projectprojects PP WHERE PP.mainproject_id = P.id  ) THEN
+                                        1
+                                    ELSE
+                                        0
+                                END AS subproject
+                            FROM projectsmanager_projects P
+                            WHERE P.isDeleted = 0    
+                        ),
+
+                        ProjectDetails AS (
+                            SELECT     
+                                P.id,
+                                CASE 
+                                    WHEN EP.subproject = 1 THEN
+                                        (SELECT P1.name 
+                                        FROM projectsmanager_projects P1 
+                                        WHERE  P1.id = EP.projectid)
+                                    ELSE
+                                        P.name 
+                                END AS 'projectname', 
+                                CASE 
+                                    WHEN EP.subproject = 1 THEN
+                                        (SELECT P1.descript 
+                                        FROM projectsmanager_projects P1 
+                                        WHERE  P1.id = EP.projectid)
+                                    ELSE
+                                        P.descript 
+                                END AS 'projectdescript'
+                            FROM projectsmanager_projects P
+                            JOIN EditProject AS EP ON EP.id = P.id
+                            WHERE P.isDeleted = 0
+                        )
                        
                         SELECT 
                             P.id, 
-                            P.name AS 'projectname', 
-                            P.descript AS 'projectdescript', 
+                            PD.projectname, 
+                            PD.projectdescript, 
                             strftime('%d/%m/%Y %H:%M', P.addeddate) AS addeddate,
                             P.completeddate, 
                             P.DueDate, 
@@ -77,6 +174,7 @@ def MyProject(userid):
                             PT.descript AS 'typedescript',
                             S.staffname  
                         FROM projectsmanager_projects P
+                        JOIN ProjectDetails AS PD                   ON PD.id = P.id 
                         LEFT JOIN projectsmanager_priority AS PP    ON PP.id=P.priority_id
                         LEFT JOIN projectsmanager_type AS PT        ON PT.id=P.type_id
                         LEFT JOIN Staff AS S                        ON S.projectid = P.id 
@@ -106,11 +204,60 @@ def SignedProject(id):
                         JOIN projectsmanager_user AS U ON P.staffadd_id = U.id  
                         WHERE P.isDeleted = 0
                     )
+                       
+                    EditProject AS (
+                            SELECT
+                                P.id,
+                                CASE 
+                                    WHEN EXISTS( SELECT PP.mainproject_id FROM projectsmanager_projectprojects PP WHERE PP.mainproject_id = P.id  ) THEN
+                                        (SELECT
+                                            P1.id 
+                                        FROM projectsmanager_projects P1 
+                                        JOIN projectsmanager_projectprojects PP             
+                                        WHERE  PP.mainproject_id = P1.id
+                                        ORDER BY PP.editeddate DESC LIMIT 1
+                                        )
+                                    ELSE
+                                        P.id
+                                END AS projectid,
+                                CASE 
+                                    WHEN EXISTS( SELECT PP.mainproject_id FROM projectsmanager_projectprojects PP WHERE PP.mainproject_id = P.id  ) THEN
+                                        1
+                                    ELSE
+                                        0
+                                END AS subproject
+                            FROM projectsmanager_projects P
+                            WHERE P.isDeleted = 0    
+                        ),
+
+                        ProjectDetails AS (
+                            SELECT     
+                                P.id,
+                                CASE 
+                                    WHEN EP.subproject = 1 THEN
+                                        (SELECT P1.name 
+                                        FROM projectsmanager_projects P1 
+                                        WHERE  P1.id = EP.projectid)
+                                    ELSE
+                                        P.name 
+                                END AS 'projectname', 
+                                CASE 
+                                    WHEN EP.subproject = 1 THEN
+                                        (SELECT P1.descript 
+                                        FROM projectsmanager_projects P1 
+                                        WHERE  P1.id = EP.projectid)
+                                    ELSE
+                                        P.descript 
+                                END AS 'projectdescript'
+                            FROM projectsmanager_projects P
+                            JOIN EditProject AS EP ON EP.id = P.id
+                            WHERE P.isDeleted = 0
+                        )
                          
                     SELECT 
                         P.id, 
-                        P.name AS 'projectname', 
-                        P.descript AS 'projectdescript', 
+                        PD.projectname, 
+                        PD.projectdescript,
                         strftime('%d/%m/%Y %H:%M', P.addeddate) AS addeddate,
                         P.completeddate, 
                         P.DueDate, 
@@ -120,7 +267,7 @@ def SignedProject(id):
                         PT.descript AS 'typedescript',
                         S.staffname 
                     From projectsmanager_taskassignto AS AT
-                    
+                    JOIN ProjectDetails AS PD                   ON PD.id = P.id 
                     JOIN projectsmanager_projects AS P  ON P.id = AT.project_id
                     JOIN projectsmanager_priority AS PP ON PP.id = P.priority_id
                     JOIN projectsmanager_type AS PT     ON PT.id = P.type_id
@@ -144,11 +291,60 @@ def SignedProject(id):
 def ProjectDetails(id):
     row = []
     with connection.cursor() as cursor:
-        cursor.execute('''                        
+        cursor.execute('''
+                    EditProject AS (
+                            SELECT
+                                P.id,
+                                CASE 
+                                    WHEN EXISTS( SELECT PP.mainproject_id FROM projectsmanager_projectprojects PP WHERE PP.mainproject_id = P.id  ) THEN
+                                        (SELECT
+                                            P1.id 
+                                        FROM projectsmanager_projects P1 
+                                        JOIN projectsmanager_projectprojects PP             
+                                        WHERE  PP.mainproject_id = P1.id
+                                        ORDER BY PP.editeddate DESC LIMIT 1
+                                        )
+                                    ELSE
+                                        P.id
+                                END AS projectid,
+                                CASE 
+                                    WHEN EXISTS( SELECT PP.mainproject_id FROM projectsmanager_projectprojects PP WHERE PP.mainproject_id = P.id  ) THEN
+                                        1
+                                    ELSE
+                                        0
+                                END AS subproject
+                            FROM projectsmanager_projects P
+                            WHERE P.isDeleted = 0    
+                        ),
+
+                        ProjectDetails AS (
+                            SELECT     
+                                P.id,
+                                CASE 
+                                    WHEN EP.subproject = 1 THEN
+                                        (SELECT P1.name 
+                                        FROM projectsmanager_projects P1 
+                                        WHERE  P1.id = EP.projectid)
+                                    ELSE
+                                        P.name 
+                                END AS 'projectname', 
+                                CASE 
+                                    WHEN EP.subproject = 1 THEN
+                                        (SELECT P1.descript 
+                                        FROM projectsmanager_projects P1 
+                                        WHERE  P1.id = EP.projectid)
+                                    ELSE
+                                        P.descript 
+                                END AS 'projectdescript'
+                            FROM projectsmanager_projects P
+                            JOIN EditProject AS EP ON EP.id = P.id
+                            WHERE P.isDeleted = 0
+                        )   
+
                     SELECT 
                         P.id, 
-                        P.name AS projectname, 
-                        P.descript AS projectdescript, 
+                        PD.projectname, 
+                        PD.projectdescript, 
                         P.addeddate, 
                         P.completeddate, 
                         P.DueDate, 
@@ -166,6 +362,7 @@ def ProjectDetails(id):
                             ELSE 1
                         END AS 'completebtn'               
                     From projectsmanager_projects AS P
+                    JOIN ProjectDetails AS PD           ON PD.id = P.id 
                     JOIN projectsmanager_priority AS PP ON PP.id = P.priority_id
                     JOIN projectsmanager_type AS PT     ON PT.id = P.type_id
                     JOIN projectsmanager_user AS U      ON P.staffadd_id = U.id 

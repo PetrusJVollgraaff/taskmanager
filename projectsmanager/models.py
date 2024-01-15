@@ -58,6 +58,15 @@ class Tasks(models.Model):
     def __str__(self):
         return self.name
 
+# Project Linked to parent Project when edited
+# to keep data of changes made on a project
+class ProjectProjects(models.Model):
+    mainproject    = models.ForeignKey(Projects, related_name='main_project', on_delete=models.CASCADE,null=True, blank=True )
+    subproject     = models.ForeignKey(Projects, related_name='sub_project', on_delete=models.CASCADE,null=True, blank=True )
+    
+    editeddate     = models.DateTimeField('date published', editable=False, auto_now_add=True)
+
+
 # Link a Task to a Project
 class ProjectsTasks(models.Model):
     tasks       = models.ForeignKey(Tasks, on_delete=models.CASCADE,null=True, blank=True)

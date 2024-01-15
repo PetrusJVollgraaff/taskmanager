@@ -32,7 +32,6 @@ def myprojects(request):
     return render(request, "projects/main.html",{"projects": projectz, "displayby": displaytitle, "delete": 1})
 
 
-
 @csrf_exempt
 @login_required(login_url='/')
 def delete(request):
@@ -102,5 +101,56 @@ def projectCreate(request):
 
         status['status'] = 'success'
         status['message'] = 'Project is successfully Added'
+        
+    return JsonResponse(status, safe=False )
+
+@csrf_exempt
+@login_required(login_url='/')
+def projectEdit(request):
+    status = {}
+
+    if request.method == 'POST':
+        jsonData    = json.loads(request.body)
+        mainprojectid =  int( jsonData.get("id") )
+        title       = jsonData.get("name")
+        descript    = jsonData.get("descript")
+        typeid      = int( jsonData.get("type") )
+        priorityid  = int( jsonData.get("priority") )
+        duedate     = jsonData.get("duedate")
+        tasks       = jsonData.get("tasks")
+        
+        userdetail  = User.objects.get(id=request.user.id)
+        priority    = Priority.objects.get(id=priorityid)
+        type        = Type.objects.get(id=typeid)
+        MainProject = Projects.objects.get(id=mainprojectid)
+        
+        projectC = Projects(name=title, descript=descript, status="open", priority=priority, type=type, staffadd=userdetail)
+        projectC.save()
+
+        proPros    = ProjectProjects(mainproject = MainProject, subproject=projectC)
+        proPros.save()
+
+        UpdateLog(MainProject, None, userdetail, "Project Edited")
+
+        '''
+        for i,task in enumerate(tasks):
+            staff           = User.objects.get(id=task.get("staffid"))
+            taskname        = task.get("name")
+            taskdescript    = task.get("descript")
+
+            taskC = Tasks(name=taskname, descript=taskdescript, staffadd=staff)
+            taskC.save()
+
+            protask    = ProjectsTasks(tasks=taskC, project=projectC)
+            protask.save()
+
+            assignto    = TaskAssignTo(tasks=taskC,  project=projectC, staffassign=staff, staffadd=userdetail, status="open",)
+            assignto.save()
+
+            UpdateLog(projectC, taskC, userdetail, "Project Task Created")
+        '''
+        status['status'] = 'success'
+        status['message'] = 'Project is successfully Added'
+    
         
     return JsonResponse(status, safe=False )

@@ -66,6 +66,9 @@ class ProjectProjects(models.Model):
     
     editeddate     = models.DateTimeField('date published', editable=False, auto_now_add=True)
 
+    def __str__(self):
+        return f"ProjectID: \"{self.mainproject.id}\", Project \"{self.mainproject.name}\", Edited: \"{self.editeddate} \" "
+
 
 # Link a Task to a Project
 class ProjectsTasks(models.Model):

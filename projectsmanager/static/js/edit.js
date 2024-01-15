@@ -134,7 +134,7 @@ class NewProject{
     #checkID(){
         var id = 1;
     
-        while ( this.tasks.some(item => item.id == id) ) {
+        while ( this.tasks.some(item => item.id == "newtask-"+id) ) {
             id ++;
         }
         return id;

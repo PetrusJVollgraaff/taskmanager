@@ -154,24 +154,22 @@ def projectEdit(request):
             proPros    = ProjectProjects(mainproject = MainProject, subproject=projectC)
             proPros.save()
 
-
-
-        UpdateLog(MainProject, None, userdetail, "Project Edited")
-
         '''
         for i,task in enumerate(tasks):
             staff           = User.objects.get(id=task.get("staffid"))
             taskname        = task.get("name")
             taskdescript    = task.get("descript")
+            typeid          = int( task.get("id") )
 
-            taskC = Tasks(name=taskname, descript=taskdescript, staffadd=staff)
-            taskC.save()
+            if not Tasks.objects.filter(name=taskname, descript=taskdescript, staffadd=staff ).exists():
+                taskC = Tasks(name=taskname, descript=taskdescript, staffadd=staff)
+                taskC.save()
 
-            protask    = ProjectsTasks(tasks=taskC, project=projectC)
-            protask.save()
+                protask    = ProjectsTasks(tasks=taskC, project=projectC)
+                protask.save()
 
-            assignto    = TaskAssignTo(tasks=taskC,  project=projectC, staffassign=staff, staffadd=userdetail, status="open",)
-            assignto.save()
+                assignto    = TaskAssignTo(tasks=taskC,  project=projectC, staffassign=staff, staffadd=userdetail, status="open",)
+                assignto.save()
 
             UpdateLog(projectC, taskC, userdetail, "Project Task Created")
 
@@ -183,6 +181,9 @@ def projectEdit(request):
 
             UpdateLog(MainProject, task, userdetail, "Project Task Removed")
         '''
+
+        UpdateLog(MainProject, None, userdetail, "Project Edited")
+
         status['status'] = 'success'
         status['message'] = 'Project is successfully Added'
     

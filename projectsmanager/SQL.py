@@ -388,9 +388,9 @@ def ProjectEditDetails(id):
                         PD.projectname AS 'name', 
                         PD.projectdescript AS 'descript', 
                         P.DueDate, 
-                        PP.id AS priorityid
+                        PP.id AS 'priority'
                         --COALESCE(T.Task, '[]') AS tasks
-                        ,PT.id AS typeid
+                        ,PT.id AS 'type'
                     From projectsmanager_projects AS P
                     JOIN ProjectDetails AS PD           ON PD.id = P.id 
                     JOIN projectsmanager_priority AS PP ON PP.id = P.priority_id

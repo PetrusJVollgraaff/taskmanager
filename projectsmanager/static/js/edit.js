@@ -13,6 +13,20 @@ class NewTasks{
     #setDescript(val){ this.descript = val;}
     #setStaff(val){ this.staffid = val;}
 
+    #dropdownSelected(elm, value){
+        var select = document.querySelectorAll(elm)[0];
+        var option;
+
+        for (var i=0; i<select.options.length; i++) {
+            option = select.options[i];
+
+            if (option.value == value) {
+                option.setAttribute('selected', true);
+                return; 
+            } 
+        }
+    }
+
     getData(){
         return {
             name:       this.name,
@@ -86,17 +100,6 @@ class NewProject{
     #setDueDate(val){   this.duedate = val; }
     #setPriority(val){  this.priority = val; }
     #setType(val){      this.type = val; }
-    #resetData(){
-        this.name       = "",
-        this.descript   = "",
-        this.duedate    = "",
-        this.priority   = 0,
-        this.type       = 0,
-        this.tasks      = []
-        
-        document.getElementById("project_detail_ctn").reset()
-        document.querySelectorAll("div.task_editor").forEach(e => e.remove());
-    }
 
     #getData(){
         return {
@@ -135,6 +138,27 @@ class NewProject{
             id ++;
         }
         return id;
+    }
+
+    #dropdownSelected(elm, value){
+        var select = document.querySelectorAll(elm)[0];
+        var option;
+
+        for (var i=0; i<select.options.length; i++) {
+            option = select.options[i];
+
+            if (option.value == value) {
+                option.setAttribute('selected', true);
+                return; 
+            } 
+        }
+    }
+
+    AppendData(){
+        document.querySelectorAll("input[name='project_name']")[0].value        = this.name;
+        document.querySelectorAll("textarea[name='project_descript']")[0].innerHTML = this.descript;
+        this.#dropdownSelected("select[name='project_priority']", this.priority)
+        this.#dropdownSelected("select[name='project_type']", this.type)
     }
 
     addEventListener(){
@@ -199,7 +223,7 @@ class NewProject{
                 evt.stopPropagation()
 
                 if (_.tasks.length > 0 && !_.#taskHasNames() && !_.#taskHasStaff() ){
-                    _.#EditProject()
+                    //_.#EditProject()
                 }else if(_.tasks.length == 0){
                     alert("Add tasks to the project")
                 }else if( _.#taskHasNames() ){
@@ -253,6 +277,7 @@ document.addEventListener("DOMContentLoaded", function(){
     .then((response) => {return response.json()})
     .then((data) => { 
         var createProject = new NewProject(data)
+        createProject.AppendData()
         createProject.addEventListener()
     })    
 })

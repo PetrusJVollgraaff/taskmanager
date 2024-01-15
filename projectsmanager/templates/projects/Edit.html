@@ -1,0 +1,76 @@
+{% extends "projects/layout.html" %}
+
+{% load static %}
+
+{% block styles %}
+    <link href="{% static "css/create.css" %}?time={% now "u" %}" rel="stylesheet">
+    <script src="{% static "js/edit.js" %}?time={% now "u" %}" type="text/javascript"></script>
+{% endblock %}
+
+{% block body %}
+<div class="create_main_ctn">
+    <div class="create_project_ctn">
+        <h1>Create Project</h1>
+              
+        {% if statusmessage  %}
+            <h3 class="Status_Text {{statusmessage.status}}">{{statusmessage.message}}</h3>
+        {% endif %}
+        <form id="project_detail_ctn" method="POST">
+            {% csrf_token %}
+            
+            <div class="left_ctn">
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="2">
+                                <input name="project_name" value=""  maxlenght="200" required placeholder="Project Name"/>
+                            </th>
+                        <tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="2">
+                            <textarea name="project_descript" maxlenght="1024" required placeholder="Project Description"></textarea></td>
+                        </tr>
+                        <tr>    
+                            <td><p>Due Date:</p></td>
+                            <td><input type="date" name="project_duedate"></td>
+                        </tr>
+                        <tr>
+                            <td><p>Project Type:<p></td>
+                            <td>
+                                <select name="project_type" class="project_type" required>
+                                    <option disabled selected value >None</option>
+                                {% for type in types %}
+                                    <option value="{{type.id}}" title="{{type.descript}}">{{type.name}}</option>    
+                                {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><p>Project Priority:<p></td>
+                            <td>
+                                <select name="project_priority" required>
+                                    <option disabled selected value >None</option>
+                                {% for priority in priorities %}
+                                    <option value="{{priority.id}}" >{{priority.name}}</option>    
+                                {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>                
+            </div>
+            <button class="project_editor" type="submit">Save</button>
+            <button class="view_project_list" type="button">Cancel</button>   
+        </form>
+    </div>
+    <div class="create_project_ctn">
+        <h1>Create Tasks</h1>
+        <button class="create_task" type="button">Add</button>  
+        <div class="task_main">
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

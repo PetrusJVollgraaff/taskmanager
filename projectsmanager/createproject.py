@@ -1,3 +1,4 @@
+import re
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.views.decorators.csrf import csrf_exempt
@@ -7,7 +8,9 @@ from django.db.models.functions import Now
 from django.shortcuts import render
 from .SQL import *
 from .functions import *
+from urllib import parse
 import json
+
 
 @csrf_exempt
 @login_required(login_url='/')
@@ -18,6 +21,23 @@ def create(request):
 
     return render(request, "projects/create.html",{"priorities": priorities, "types": types})
 
+
+@csrf_exempt
+@login_required(login_url='/')
+def edit(request):
+    priorities  = getPriorities()
+    types       = getTypes()
+
+    return render(request, "projects/edit.html",{"priorities": priorities, "types": types})
+
+@csrf_exempt
+@login_required(login_url='/')
+def getEditDetails(request):
+    referer_url = request.META.get('HTTP_REFERER')
+    parsed      = parse.urlparse(referer_url)
+    pid         = re.sub(r"pid\=([\d]+)", r"\1", parsed.query)
+
+    return JsonResponse(ProjectEditDetails(pid)[0], safe=False )
 
 @csrf_exempt
 @login_required(login_url='/')

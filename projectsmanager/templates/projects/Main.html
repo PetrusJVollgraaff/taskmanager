@@ -71,9 +71,15 @@
             <p class="two_span"><span>Project Priority:</span><span >{{project.priorityname}}</span></p>    
             {% if user.is_authenticated %}
                 <button onclick="window.location.href = '{% url 'projectDetail' %}?pid={{ project.id }}';">View</button>
+                
+                {% if user.id == project.staffadd_id %}
+                <button onclick="window.location.href = '{% url 'edit' %}?pid={{ project.id }}';">Edit</button>
+                {% endif %}
+
                 {% if delete == 1 %}
                 <button onclick="DeleteProject({{ project.id }});">Delete</button>
                 {% endif %}
+
             {% endif %}                
         </div>
     {% empty %}
